@@ -22,10 +22,29 @@
     import * as THREE from '../build/three.module.js';
 
     import Stats from './jsm/libs/stats.module.js';
-
-    import { OrbitControls } from './jsm/controls/OrbitControls.js';
     import { MD2CharacterComplex } from './jsm/misc/MD2CharacterComplex.js';
     import { Gyroscope } from './jsm/misc/Gyroscope.js';
+    import { DDSLoader } from './jsm/loaders/DDSLoader.js';
+    import { MTLLoader } from './jsm/loaders/MTLLoader.js';
+    import { OBJLoader } from './jsm/loaders/OBJLoader.js';
+    import { TTFLoader } from './jsm/loaders/TTFLoader.js';
+    import { FBXLoader } from './jsm/loaders/FBXLoader.js';
+    import { OrbitControls } from './jsm/controls/OrbitControls.js';
+
+    let group, textMesh1, textMesh2, textGeo, material;
+    let firstLetter = true;
+
+    let text = 'three.js';
+    const height = 20,
+        size = 70,
+        hover = 30,
+        curveSegments = 4,
+        bevelThickness = 2,
+        bevelSize = 1.5;
+
+    let font = null;
+    const mirror = true;
+
 
     let SCREEN_WIDTH = window.innerWidth;
     let SCREEN_HEIGHT = window.innerHeight;
@@ -60,11 +79,11 @@
         // CAMERA
 
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 4000);
-        camera.position.set(0, 150, 1300);
+        camera.position.set(0, 150, 3000);
 
         // SCENE
         var loader = new THREE.TextureLoader();
-        var backgroundTexture = loader.load( 'https://i.imgur.com/upWSJlY.jpg' );
+        var backgroundTexture = loader.load( '' );
         scene = new THREE.Scene();
         scene.background = backgroundTexture;
         scene.fog = new THREE.Fog(0xEBF1E8, 1500, 4500);
@@ -95,15 +114,15 @@
         // scene.add( new THREE.CameraHelper( light.shadow.camera ) );
 
 
-        //  GROUND
+        //  GROUND FACTORY
 
-        const gt = new THREE.TextureLoader().load("textures/terrain/grasslight-big.jpg");
-        const gg = new THREE.PlaneGeometry(16000, 16000);
+        const gt = new THREE.TextureLoader().load("textures/terrain/ground_0001_base_color_4k.jpg");
+        const gg = new THREE.PlaneGeometry(2000, 2000);
         const gm = new THREE.MeshPhongMaterial({color: 0xffffff, map: gt});
 
         const ground = new THREE.Mesh(gg, gm);
         ground.rotation.x = -Math.PI / 2;
-        ground.material.map.repeat.set(64, 64);
+        ground.material.map.repeat.set(6, 6);
         ground.material.map.wrapS = THREE.RepeatWrapping;
         ground.material.map.wrapT = THREE.RepeatWrapping;
         ground.material.map.encoding = THREE.sRGBEncoding;
@@ -111,6 +130,148 @@
         ground.receiveShadow = true;
 
         scene.add(ground);
+
+        //  BAC FACTORY
+
+        const gtt = new THREE.TextureLoader().load("textures/terrain/brick_diffuse.jpg");
+        const ggg = new THREE.PlaneGeometry(2000, 600);
+        const gmm = new THREE.MeshPhongMaterial({color: 0xffffff, map: gtt});
+
+        const backmorning = new THREE.Mesh(ggg, gmm);
+        backmorning.rotation.x = Math.PI * 2;
+        backmorning.material.map.repeat.set(3, 1);
+        backmorning.material.map.wrapS = THREE.RepeatWrapping;
+        backmorning.material.map.wrapT = THREE.RepeatWrapping;
+        backmorning.material.map.encoding = THREE.sRGBEncoding;
+        // note that because the ground does not cast a shadow, .castShadow is left false
+        backmorning.receiveShadow = true;
+        backmorning.position.z -= 350;
+
+
+        scene.add(backmorning);
+
+        const gttt = new THREE.TextureLoader().load("https://i.imgur.com/upWSJlY.jpg");
+        const gggg = new THREE.PlaneGeometry(2000, 2000);
+        const gmmm = new THREE.MeshPhongMaterial({color: 0xffffff, map: gttt});
+
+        const backmorning2 = new THREE.Mesh(gggg, gmmm);
+        backmorning2.rotation.x = Math.PI * 2;
+        backmorning2.material.map.repeat.set(1, 1);
+        backmorning2.material.map.wrapS = THREE.RepeatWrapping;
+        backmorning2.material.map.wrapT = THREE.RepeatWrapping;
+        backmorning2.material.map.encoding = THREE.sRGBEncoding;
+        // note that because the ground does not cast a shadow, .castShadow is left false
+        backmorning2.receiveShadow = true;
+        backmorning2.position.z -= 360;
+
+
+        scene.add(backmorning2);
+
+        //OBJ FACTORY
+        var loader2 = new FBXLoader()
+
+            .load(
+                'textures/obj/uploads_files_26073_thefactory_obj/Test.fbx',
+                // Permet d'assigner un matériel à l'objet
+                function ( laserobj ) {
+                    laserobj.traverse( function ( node ) {
+                        node.receiveShadow = true ;
+                        node.castShadow = true;
+                    } );
+                    // Position initiale de l'objet et réglage de la rotation
+                    //
+                    laserobj.scale.x=1.5;
+                    laserobj.scale.y=1.5;
+                    laserobj.scale.z=1.5;
+
+                    laserobj.position.x -= 1000;
+                    laserobj.rotation.z = Math.PI * 2;
+                    laserobj.rotation.y = Math.PI / 2;
+
+                    scene.add( laserobj );
+
+                });
+
+        //BACK TRANSI
+
+        const textureTransition2 = new THREE.TextureLoader().load("");
+        const geometryTransition2 = new THREE.PlaneGeometry(2000, 2000);
+        const mixTransition2 = new THREE.MeshPhongMaterial({color: 0xffffff, map: textureTransition2});
+
+        const transition2 = new THREE.Mesh(geometryTransition2, mixTransition2);
+        transition2.rotation.x = -Math.PI * 2;
+        transition2.material.map.wrapS = THREE.RepeatWrapping;
+        transition2.material.map.wrapT = THREE.RepeatWrapping;
+        transition2.material.map.encoding = THREE.sRGBEncoding;
+        // note that because the ground does not cast a shadow, .castShadow is left false
+        transition2.position.z -= 360;
+        transition2.position.x += 2000;
+
+        scene.add(transition2);
+
+        //GROUND TRANSI
+
+        const textureTransition = new THREE.TextureLoader().load("");
+        const geometryTransition = new THREE.PlaneGeometry(2000, 2000);
+        const mixTransition = new THREE.MeshPhongMaterial({color: 0xffffff, map: textureTransition});
+
+        const transition = new THREE.Mesh(geometryTransition, mixTransition);
+        transition.rotation.x = -Math.PI / 2;
+        transition.material.map.wrapS = THREE.RepeatWrapping;
+        transition.material.map.wrapT = THREE.RepeatWrapping;
+        transition.material.map.encoding = THREE.sRGBEncoding;
+        // note that because the ground does not cast a shadow, .castShadow is left false
+        transition.position.x += 2000;
+
+        scene.add(transition);
+
+        //TEXT TRANSI 1
+        var loader = new THREE.FontLoader();
+
+        loader.load( 'https://unpkg.com/three@0.77.0/examples/fonts/helvetiker_bold.typeface.json', function ( font ) {
+
+            var textGeo = new THREE.TextGeometry( "Votre livreur est en route", {
+                font: font,
+                size: 100,
+                height: 5,
+                curveSegments: 12,
+                bevelThickness: 2,
+                bevelSize: 5,
+                bevelEnabled: true
+
+            } );
+
+            textGeo.computeBoundingBox();
+            textGeo.computeVertexNormals();
+
+            var textMaterial = new THREE.MeshPhongMaterial( { color: 0x12a7e2 ,flatShading: true} );
+
+            var mesh = new THREE.Mesh( textGeo, textMaterial );
+            mesh.position.x += 1200 ;
+            mesh.position.y += 100 ;
+
+            scene.add( mesh );
+
+        } );
+
+        // BACK MORNING
+
+        // GROUND MORNING
+
+        const textureMorning = new THREE.TextureLoader().load("textures/terrain/grasslight-big.jpg");
+        const geometryMorning = new THREE.PlaneGeometry(2000, 2000);
+        const mixMorning = new THREE.MeshPhongMaterial({color: 0xffffff, map: textureMorning});
+
+        const morning = new THREE.Mesh( geometryMorning, mixMorning);
+        morning.rotation.x = -Math.PI / 2;
+        morning.material.map.repeat.set(6, 6);
+        morning.material.map.wrapS = THREE.RepeatWrapping;
+        morning.material.map.wrapT = THREE.RepeatWrapping;
+        morning.material.map.encoding = THREE.sRGBEncoding;
+        // note that because the ground does not cast a shadow, .castShadow is left false
+        morning.receiveShadow = true;
+        morning.position.x += 4000 ;
+        scene.add(morning);
 
         // RENDERER
 
